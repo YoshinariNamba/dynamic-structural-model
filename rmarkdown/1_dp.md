@@ -10,11 +10,11 @@ on Chapter 7.
 
 ## Overview
 
-1.  [Replication](#replication)
+1.  [Replication](#1-replication)
     1.  Value Function Iteration
     2.  Policy Function Iteration
     3.  Finite Stochastic Dynamic Programming
-2.  [Exercise](#exercise)
+2.  [Exercise](#2-exercise)
 
 # 1. Replication
 
@@ -137,7 +137,7 @@ for(iter in 1:n){
 toc()
 ```
 
-    ## 0.425 sec elapsed
+    ## 0.417 sec elapsed
 
 ``` r
 # plot
@@ -170,7 +170,7 @@ p1
 toc()
 ```
 
-    ## 0.233 sec elapsed
+    ## 0.236 sec elapsed
 
 Convergence of Value Function
 
@@ -220,7 +220,7 @@ while(conv>crit && Iter<1000){
 toc()
 ```
 
-    ## 1.997 sec elapsed
+    ## 2.026 sec elapsed
 
 ``` r
 cat("# of iterations:", Iter)
@@ -391,7 +391,7 @@ while(conv>crit && Iter<1000){
 toc()
 ```
 
-    ## 1.28 sec elapsed
+    ## 1.379 sec elapsed
 
 ``` r
 cat("# of outer iterations:", Iter)
@@ -441,7 +441,7 @@ for(t_iter in seq(from = t, to = 1, by = -1)){
   
   # loop over k_{t}
   for(inK in 1:length(K)){
-  # for(inK in 1:length(seq(from = 0, to = Kl, by = grid))){
+  # for(inK in 1:length(seq(from = 0, to = Kl, by = grid))){ # seems mistaken
     # loop over k_{t + 1}
     for(outK in 1:inK){
       c <- K[inK] - (K[outK]/Theta)^(1/Alpha) # note this is scaler
@@ -449,14 +449,18 @@ for(t_iter in seq(from = t, to = 1, by = -1)){
       nextKh <- Theta*(K[inK] - c)^Alpha + e[2]
       nextKl[nextKl < 0] <- rep(0, sum(nextKl < 0))
       
+      position_l <- ifelse((round(nextKl/grid) + 1) <= length(K), 
+                           (round(nextKl/grid) + 1), 
+                           length(K))
+      position_h <- ifelse((round(nextKh/grid) + 1) <= length(K),
+                           (round(nextKh/grid) + 1), 
+                           length(K))
       EnextV <- 
-        PI[1] * V[ifelse((round(nextKl/grid) + 1) <= length(K),
-                         (round(nextKl/grid) + 1), length(K)), t_iter+1] + 
-        PI[2] * V[ifelse((round(nextKh/grid) + 1) <= length(K),
-                         (round(nextKh/grid) + 1), length(K)), t_iter+1]
+        PI[1] * V[position_l, t_iter+1] + PI[2] * V[position_h, t_iter+1]
         #PI[1] * V[(round(nextKl/grid) + 1), t_iter+1] + 
-        #PI[2] * V[(round(nextKh/grid) + 1), t_iter+1]
-      #c <- ifelse(c <= 0, 1e-100, c)
+        #PI[2] * V[(round(nextKh/grid) + 1), t_iter+1] # seems mistaken
+      
+      #c <- ifelse(c <= 0, 1e-100, c) # if you want to avoid -Inf
       aux[inK, outK, t_iter] <- log(c) + Beta*EnextV
     }
   }
@@ -482,7 +486,7 @@ for(t_iter in seq(from = t, to = 1, by = -1)){
 toc()
 ```
 
-    ## 16.286 sec elapsed
+    ## 16.288 sec elapsed
 
 Simulation
 
@@ -518,7 +522,7 @@ for(p in 1:people){
 toc()
 ```
 
-    ## 0.03 sec elapsed
+    ## 0.027 sec elapsed
 
 plot
 
@@ -612,11 +616,13 @@ ggplot() +
 
 Note that the transition equation is
 
-![k\_{t + 1} = f(k_t) - c_t + \varepsilon\_{t + 1}.](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;k_%7Bt%20%2B%201%7D%20%3D%20f%28k_t%29%20-%20c_t%20%2B%20%5Cvarepsilon_%7Bt%20%2B%201%7D. "k_{t + 1} = f(k_t) - c_t + \varepsilon_{t + 1}.")
+![k\_{t + 1} = f(k_t) - c_t + \varepsilon\_{t + 1},](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;k_%7Bt%20%2B%201%7D%20%3D%20f%28k_t%29%20-%20c_t%20%2B%20%5Cvarepsilon_%7Bt%20%2B%201%7D%2C "k_{t + 1} = f(k_t) - c_t + \varepsilon_{t + 1},")
 
+where the production function is set as
+![f(k_t) = \theta k^{\alpha}](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;f%28k_t%29%20%3D%20%5Ctheta%20k%5E%7B%5Calpha%7D "f(k_t) = \theta k^{\alpha}").
 The value function is written as
 
-![V(k\_{t}) = \max\_{k\_{t+1}}{ \\{ u(c_t) + \beta E_t\[V(k\_{t+1}-\varepsilon\_{t+1})\] \\}}.](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;V%28k_%7Bt%7D%29%20%3D%20%5Cmax_%7Bk_%7Bt%2B1%7D%7D%7B%20%5C%7B%20u%28c_t%29%20%2B%20%5Cbeta%20E_t%5BV%28k_%7Bt%2B1%7D-%5Cvarepsilon_%7Bt%2B1%7D%29%5D%20%5C%7D%7D. "V(k_{t}) = \max_{k_{t+1}}{ \{ u(c_t) + \beta E_t[V(k_{t+1}-\varepsilon_{t+1})] \}}.")
+![V(k\_{t}) = \max\_{c\_{t} \in (0, k_t\]}{ \\{ u(c_t) + \beta E_t\[V(k\_{t+1}-\varepsilon\_{t+1})\] \\}}.](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;V%28k_%7Bt%7D%29%20%3D%20%5Cmax_%7Bc_%7Bt%7D%20%5Cin%20%280%2C%20k_t%5D%7D%7B%20%5C%7B%20u%28c_t%29%20%2B%20%5Cbeta%20E_t%5BV%28k_%7Bt%2B1%7D-%5Cvarepsilon_%7Bt%2B1%7D%29%5D%20%5C%7D%7D. "V(k_{t}) = \max_{c_{t} \in (0, k_t]}{ \{ u(c_t) + \beta E_t[V(k_{t+1}-\varepsilon_{t+1})] \}}.")
 
 ### (ii)-(a)
 
@@ -627,28 +633,296 @@ IterateStochastic <- function(V, maxK){
   Alpha <- 0.65
   Beta <- 0.9
   Theta <- 1.2
+  e <- c(-2, 2)
+  PI <- c(0.5, 0.5)
   
   grid <- length(V)
   K <- seq(from = 1e-6, to = maxK, length.out = grid)
   TV <- rep(0, length(V))
-  optK <- rep(0, length(V))
+  optC <- rep(0, length(V))
   
   # loop through and create new value function for each possible capital value
   for(k in 1:grid){
-    c <- rep(Theta*(K[k]^Alpha), grid) - K
-    c[c<=0] <- rep(0, sum(c<=0))
-    u <- log(c)
-    candid <- u + Beta*V
+    C <- seq(from = 1e-10, to = K[k], by = 0.1)
+    #c <- rep(Theta*(K[k]^Alpha), grid) - K
+    nextKl <- rep(Theta*K[k]^Alpha, length(C)) - C + e[1]
+    nextKh <- rep(Theta*K[k]^Alpha, length(C)) - C + e[2]
+    nextKl[nextKl < 0] <- rep(0, sum(nextKl < 0))
+    
+    
+    EnextV <- rep(0, length(C))
+    position_l <- rep(0, length(C))
+    position_h <- rep(0, length(C))
+    
+    for(i in 1:length(C)){
+      position_l[i] <- which(abs(K - nextKl[i]) == min(abs(K - nextKl[i])))[1]
+      position_h[i] <- which(abs(K - nextKh[i]) == min(abs(K - nextKh[i])))[1]
+      EnextV[i] <- PI[1] * V[position_l[i]] + PI[2] * V[position_h[i]]
+    }
+    
+    u <- log(C)
+    candid <- u + Beta*EnextV
     TV[k] <- max(candid)
-    optK[k] <- which(candid == max(candid))
+    optC[k] <- which(candid == max(candid))
   }
   
-  sol <- matrix(c(TV, optK), nrow = length(V), ncol = 2, byrow = FALSE)
+  sol <- matrix(c(TV, optC), nrow = length(V), ncol = 2, byrow = FALSE)
   return(sol)
 }
 ```
 
+Convergence of Value Function
+
+``` r
+tic()
+# setting
+K <- seq(from = 1e-6, to = 100, length.out = 1000) # grid
+V <- rep(0, 1000) # guess
+conv <- 100 # criterion for convergence
+crit <- 1e-2 # stopping threshold
+Iter <- 0 # numbering iteration
+
+# for plot
+df <- data.frame(K = K, V = V)
+p7 <- ggplot() + 
+  geom_line(data = df, aes(x = K, y = V, color = 'guess'))
+
+# iteration
+while(conv>crit && Iter<1000){
+  Iter <- Iter + 1
+  if(Iter %/% 10 == Iter/10) cat("Iteration number:", Iter, "\n")
+  
+  # mapping
+  sol <- IterateStochastic(V, 100)
+  TV <- sol[, 1]
+  
+  # distance between TV and V
+  conv <- max(abs(TV-V))
+  
+  # for plot
+  df$TV <- TV # store TV in a data.frame to layer plots
+  p7 <- p7 + geom_line(data = df, aes(x = K, y = TV, color = 'iteration')) 
+  
+  # pass TV to next iteration
+  V <- TV
+}
+```
+
+    ## Iteration number: 10 
+    ## Iteration number: 20 
+    ## Iteration number: 30 
+    ## Iteration number: 40 
+    ## Iteration number: 50 
+    ## Iteration number: 60
+
+``` r
+V_stoch <- V
+optC_stoch <- sol[, 2]
+toc()
+```
+
+    ## 697.984 sec elapsed
+
+``` r
+cat("# of iterations:", Iter)
+```
+
+    ## # of iterations: 66
+
+``` r
+# plot
+p7 <- p7 + 
+  geom_line(aes(x = K, y = soln, color = 'deterministic')) + 
+  scale_color_manual(
+    name = NULL, 
+    values = c("guess" = "black", "iteration" = "lightgray", "deterministic" = "tomato"), 
+    labels = c("guess", "iteration", "deterministic")
+  ) +
+  labs(x = "Amount of Capital", y = "Value Function") +
+  theme_classic() 
+p7
+```
+
+![](1_dp_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+
+Comparison of stochastic and deterministic dynamic programming
+
+``` r
+ggplot() + 
+  geom_line(aes(x = K, y = V_stoch, color = "stochastic")) + 
+  geom_line(aes(x = K, y = soln, color = 'deterministic')) + 
+  scale_color_manual(
+    name = NULL, 
+    values = c("stochastic" = "#00AFBB", "deterministic" = "tomato"), 
+    labels = c("stochastic", "deterministic")
+  ) +
+  labs(x = "Amount of Capital", y = "Value Function") +
+  theme_classic() 
+```
+
+![](1_dp_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+
+Simulation
+
+``` r
+tic()
+# setup parameters and simulate shocks
+set.seed(2022)
+t <- 10
+people <- 100
+Kl <- 100
+V <- cbind(matrix(rep(NA, length(K)*t), ncol = t), matrix(rep(0, length(K)), ncol = 1))
+epsilon <- 
+  ifelse(purrr::rbernoulli(people*(t+1), 0.5), 2, -2) %>% 
+  matrix(ncol = t+1)
+vf <- 
+  rep(NA, people*t) %>% 
+  matrix(ncol = t)
+kap <- # capital
+  cbind(
+    Kl*(rep(1, people)), # k_{0}
+    matrix(rep(NA, people*t), ncol = t)
+  )
+con <- # consumption
+  rep(NA, people*t) %>% 
+  matrix(ncol = t)
+
+for(p in 1:people){
+  for(t_iter in 1:t){
+    position <- 
+      which(abs(K - kap[p, t_iter]) == min(abs(K - kap[p, t_iter]), na.rm = TRUE))[1]
+    vf[p, t_iter] <- V_stoch[position]
+    
+    con[p, t_iter] <- 
+      seq(from = 1e-10, to = K[position], by = 0.1)[optC_stoch[position]]
+    k_tmp <- Theta*kap[p, t_iter]^(Alpha) - con[p, t_iter] + epsilon[p + t_iter + 1]
+    kap[p, t_iter + 1] <- ifelse(k_tmp > 0, k_tmp, 0)
+  }
+}
+toc()
+```
+
+    ## 0.029 sec elapsed
+
+plot consumption transition
+
+``` r
+p_8 <- ggplot()
+for(i in 1:people){
+  df <- data.frame(time = 1:t, consumption = con[i, ])
+  p_8 <- p_8 + 
+    geom_line(
+      data = df, aes(x = time, y = consumption), 
+      color = sample(brewer.pal(12, "Paired"), 1)
+    )
+}
+p_8 <- p_8 +
+  labs(x = "Time", y = "Consumption") + 
+  theme_classic()
+p_8
+```
+
+![](1_dp_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+
+``` r
+p_9 <- ggplot()
+for(i in 1:people){
+  df <- data.frame(time = 0:t, capital = kap[i, ])
+  p_9 <- p_9 + 
+    geom_line(
+      data = df, aes(x = time, y = capital), 
+      color = sample(brewer.pal(12, "Paired"), 1)
+    )
+}
+p_9 <- p_9 +
+  labs(x = "Time", y = "Capital") + 
+  theme_classic()
+p_9
+```
+
+![](1_dp_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
+
 ### (ii)-(b)
+
+``` r
+tic()
+# setup parameters and simulate shocks
+set.seed(2022)
+t <- 10
+people <- 100
+Kl <- 100
+V <- cbind(matrix(rep(NA, length(K)*t), ncol = t), matrix(rep(0, length(K)), ncol = 1))
+epsilon <- 
+  ifelse(purrr::rbernoulli(people*(t+1), 0.5), 2, -2) %>% 
+  matrix(ncol = t+1)
+vf <- 
+  rep(NA, people*t) %>% 
+  matrix(ncol = t)
+kap <- # capital
+  cbind(
+    runif(people, min = 50, max = 100), # k_{0}
+    matrix(rep(NA, people*t), ncol = t)
+  )
+con <- # consumption
+  rep(NA, people*t) %>% 
+  matrix(ncol = t)
+
+for(p in 1:people){
+  for(t_iter in 1:t){
+    position <- 
+      which(abs(K - kap[p, t_iter]) == min(abs(K - kap[p, t_iter]), na.rm = TRUE))[1]
+    vf[p, t_iter] <- V_stoch[position]
+    
+    con[p, t_iter] <- 
+      seq(from = 1e-10, to = K[position], by = 0.1)[optC_stoch[position]]
+    k_tmp <- Theta*kap[p, t_iter]^(Alpha) - con[p, t_iter] + epsilon[p + t_iter + 1]
+    kap[p, t_iter + 1] <- ifelse(k_tmp > 0, k_tmp, 0)
+  }
+}
+toc()
+```
+
+    ## 0.042 sec elapsed
+
+Transision of Consumption
+
+``` r
+p_10 <- ggplot()
+for(i in 1:people){
+  df <- data.frame(time = 1:t, consumption = con[i, ])
+  p_10 <- p_10 + 
+    geom_line(
+      data = df, aes(x = time, y = consumption), 
+      color = sample(brewer.pal(12, "Paired"), 1)
+    )
+}
+p_10 <- p_10 +
+  labs(x = "Time", y = "Consumption") + 
+  theme_classic()
+p_10
+```
+
+![](1_dp_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+
+Transision of Capital
+
+``` r
+p_11 <- ggplot()
+for(i in 1:people){
+  df <- data.frame(time = 0:t, capital = kap[i, ])
+  p_11 <- p_11 + 
+    geom_line(
+      data = df, aes(x = time, y = capital), 
+      color = sample(brewer.pal(12, "Paired"), 1)
+    )
+}
+p_11 <- p_11 +
+  labs(x = "Time", y = "Capital") + 
+  theme_classic()
+p_11
+```
+
+![](1_dp_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
 
 ## (iii)
 
