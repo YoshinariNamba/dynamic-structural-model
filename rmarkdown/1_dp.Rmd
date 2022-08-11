@@ -2,9 +2,9 @@
 title: "Dynamic Programming"
 author: "Yoshinari Namba"
 date: "`r Sys.Date()`"
-output: 
-  github_document:
-    pandoc_args: --webtex
+output: pdf_document
+  #github_document:
+    #pandoc_args: --webtex
 ---
 
 ```{r setup, include=FALSE}
@@ -240,7 +240,7 @@ Note that
 $$
 V_j = U_j + \beta Q_{j} V_j ,
 $$
-where $V_j$ denotes a vector by which a value function is expressed, and $Q_j$ denotes the binary transition matrix whose $i-l$ entry indicates whether each $k_l$ is the optimal (or $\tilde{k}$) given $k_i =k$ or not. Here, $U_j$ is a vactor whose each entry represents the maximized utility given today's capital $k$, i.e., each entry is $u(c_j(k))$. Solving this equation, we have
+where $V_j$ denotes a vector by which a value function with respect to discretized $k_t$ is expressed, and $Q_j$ denotes the transition matrix whose binary entry takes $1$ if it is the optimal $\tilde{k}$ given $k$ or not. $U_j$ is a vactor whose each entry represents the maximized utility given today's capital $k$, i.e., $u(c_j(k))$. Solving this equation, we have
 $$
 V_j = (I - \beta Q_j)^{-1} U_j.
 $$
@@ -513,8 +513,9 @@ $$
 where the production function is set as $f(k_t) = \theta k^{\alpha}$.
 The value function is written as
 $$
-V(k_{t}) = \max_{c_{t} \in (0, k_t]}{ \{ u(c_t) + \beta E_t[V(k_{t+1}-\varepsilon_{t+1})] \}}.
+V(k_{t}) = \max_{c_{t} \in (0, k_t]}{ \{ u(c_t) + \beta E_t[V(f(k_{t})- c_t + \varepsilon_{t+1})] \}}.
 $$
+Here, discretization of consumption $c_t$ is necessary to find the solution.
 
 ### (ii)-(a)
 ```{r}
